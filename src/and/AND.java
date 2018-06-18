@@ -11,7 +11,7 @@ public class AND {
     public static void main(String[] args) throws IOException, Exception {
         ArrayList<String> R = new ArrayList<>();
         ArrayList<String> IPs = new ArrayList<>();
-        device_discovery("192.168.10.2", R, IPs);
+        device_discovery("192.168.3.2", R, IPs);
         System.out.println("IPs:-");
         for (String s : IPs) {
             System.out.println(s);
@@ -23,41 +23,8 @@ public class AND {
             System.out.println(a);
         }
 
-        ArrayList<Connection> Connections = new ArrayList<>();
-
-        for (int i = 0; i < agents.size(); i++) {
-            Agent A = agents.get(i);
-            if (A.getClass().getName().equals("Router")) {
-                ArrayList<Interface> usedinf = ((Router) A).get_UsedInterfaces();
-                if (!usedinf.isEmpty()) {
-                    ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(0).getIp_address(),
-                            OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
-                    ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
-                    for (String s : tempnh) {
-                        if (((Router) A).has_IPaddress(s)) {
-                            nexthops.remove(s);
-                        } else if (!MiscellaneousMethods.isHostIP(s)) {
-                            nexthops.remove(s);
-                        }
-                    }
-                    if (i == 0) {
-                        for (String s : nexthops) {
-                            Agent B = get_Agent_by_Ip(agents, s);
-                            if(B != null){                                
-                                Connections.add(new Connection(A, B));
-                            }
-                        }
-                    }else{
-                        for (String s : nexthops) {
-                            Agent B = get_Agent_by_Ip(agents, s);
-                            if(B != null && !has_similar_connection(Connections, A, B)){
-                                Connections.add(new Connection(A, B));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        ArrayList<Connection> Connections = create_connections(agents);
+        
         System.out.println("Connections:-");
         for(Connection c: Connections){
             System.out.println("ID: "+c.getID()+"\tA: " +c.getA()+"\tB: "+c.getB());
@@ -226,4 +193,54 @@ public class AND {
         }
         return false;
     }
+    
+    public static ArrayList<Connection> create_connections(ArrayList<Agent> agents) throws IOException{
+        ArrayList<Connection> Connections = new ArrayList<>();
+        for (int i = 0; i < agents.size(); i++) {
+            Agent A = agents.get(i);
+            if (A.getClass().getSimpleName().equals("Router")) {
+                ArrayList<Interface> usedinf = ((Router) A).get_UsedInterfaces();
+                if (!usedinf.isEmpty()) {
+                    for (int j = 0; j < usedinf.size(); j++) {
+                        ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(j).getIp_address(),
+                                OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
+                        ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
+                        for (String s : tempnh) {
+                            if (((Router) A).has_IPaddress(s)) {
+                                nexthops.remove(s);
+                            } else if (!MiscellaneousMethods.isHostIP(s)) {
+                                nexthops.remove(s);
+                            }
+                        }
+                        if (i == 0) {
+                            for (String s : nexthops) {
+                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), usedinf.get(j).getSubnet_mask());
+                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, usedinf.get(j).getSubnet_mask());
+                                if (infNetAddress.equals(ipNetAddress)) {
+                                    Agent B = get_Agent_by_Ip(agents, s);
+                                    if (B != null) {
+                                        Connections.add(new Connection(A, B));
+                                    }
+                                }
+                            }
+                        } else {
+                            for (String s : nexthops) {
+                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), usedinf.get(j).getSubnet_mask());
+                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, usedinf.get(j).getSubnet_mask());
+                                if (infNetAddress.equals(ipNetAddress)) {
+                                    Agent B = get_Agent_by_Ip(agents, s);
+                                    if (B != null && !has_similar_connection(Connections, A, B)) {
+                                        Connections.add(new Connection(A, B));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Connections;
+    }
+    
+    
 }
