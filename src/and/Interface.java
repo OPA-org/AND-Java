@@ -86,4 +86,9 @@ public class Interface  {
     public void setConnected_to(String connected_to) {
         this.connected_to = connected_to;
     }
+    
+    @Override
+    public String toString() {
+        return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\tmask: "+subnet_mask+"\n\tmac: "+mac_address;
+    }
 }

@@ -4,11 +4,21 @@ import java.util.ArrayList;
 
 public class Switch extends Agent {
     private ArrayList<Interface> interfaces;
-
+    private String sysDescr;
+    private String sysName;
+    
     public Switch(ArrayList<Interface> interfaces) {
         super(false);
         this.interfaces = interfaces;
     }
+    
+    public Switch(String sysDescr,String sysName,ArrayList<Interface> interfaces) {
+        super(false);
+        this.sysDescr = sysDescr;
+        this.sysName = sysName;
+        this.interfaces = interfaces;
+    }
+    
     public Switch() {
         super(false);
         this.interfaces = new ArrayList<>();
@@ -63,7 +73,11 @@ public class Switch extends Agent {
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String s = "sysdesc: "+sysDescr+"\nsysname: "+sysName;
+        for (Interface intf : interfaces) {
+            s += "\n"+ intf.toString();
+        }
+        return s;
     }
     
 }

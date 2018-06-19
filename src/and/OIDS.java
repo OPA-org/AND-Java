@@ -4,7 +4,11 @@ public class OIDS {
     public static final String sysDescr = "1.3.6.1.2.1.1.1";
     public static final String sysServices = "1.3.6.1.2.1.1.7";
     public static final String sysName = "1.3.6.1.2.1.1.5";
-
+    
+    public static final String dot1dBaseBridgeAddress = "1.3.6.1.2.1.17.1.1";
+    
+    public static final String dot1dStpProtocolSpecification = "1.3.6.1.2.1.17.2.1";
+    
     public static final String ifTable = "1.3.6.1.2.1.2.2";
     public static final String ifIndex = "1.3.6.1.2.1.2.2.1.1";
     public static final String ifDescr = "1.3.6.1.2.1.2.2.1.2";
