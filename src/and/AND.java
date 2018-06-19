@@ -27,7 +27,11 @@ public class AND {
         
         System.out.println("Connections:-");
         for(Connection c: Connections){
-            System.out.println("ID: "+c.getID()+"\tA: " +c.getA()+"\tB: "+c.getB());
+            System.out.println("ID: "+c.getID()
+                    +"\tA: " +c.getA()
+                    +"\tB: "+c.getB()
+                    +"\tSubnet: "+c.getSubnet()
+                    +"\tMask: "+c.getMask());
         }
         
         /*ArrayList<String> oids = new ArrayList<>();
@@ -214,23 +218,25 @@ public class AND {
                         }
                         if (i == 0) {
                             for (String s : nexthops) {
-                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), usedinf.get(j).getSubnet_mask());
-                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, usedinf.get(j).getSubnet_mask());
+                                String Mask = usedinf.get(j).getSubnet_mask();
+                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
+                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
                                 if (infNetAddress.equals(ipNetAddress)) {
                                     Agent B = get_Agent_by_Ip(agents, s);
                                     if (B != null) {
-                                        Connections.add(new Connection(A, B));
+                                        Connections.add(new Connection(A, B, ipNetAddress, Mask));
                                     }
                                 }
                             }
                         } else {
                             for (String s : nexthops) {
-                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), usedinf.get(j).getSubnet_mask());
-                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, usedinf.get(j).getSubnet_mask());
+                                String Mask = usedinf.get(j).getSubnet_mask();
+                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
+                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
                                 if (infNetAddress.equals(ipNetAddress)) {
                                     Agent B = get_Agent_by_Ip(agents, s);
                                     if (B != null && !has_similar_connection(Connections, A, B)) {
-                                        Connections.add(new Connection(A, B));
+                                        Connections.add(new Connection(A, B, ipNetAddress, Mask));
                                     }
                                 }
                             }
