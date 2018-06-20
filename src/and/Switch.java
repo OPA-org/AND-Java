@@ -67,17 +67,29 @@ public class Switch extends Agent {
     }
 
     @Override
-    public Boolean has_IPaddress(String IP) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Boolean has_IPaddress(String IP){
+        for(Interface inter: this.interfaces){
+            if(inter.getIp_address().equals(IP)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String toString() {
-        String s = "sysdesc: "+sysDescr+"\nsysname: "+sysName;
-        for (Interface intf : interfaces) {
-            s += "\n"+ intf.toString();
+        return sysName;
+    }
+
+    @Override
+    public ArrayList<Interface> get_UsedInterfaces() {
+        ArrayList<Interface> used = new ArrayList<>();
+        for(Interface inf: this.interfaces){
+            if(!inf.getIp_address().isEmpty()){
+                used.add(inf);
+            }
         }
-        return s;
+        return used;
     }
     
 }

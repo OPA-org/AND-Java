@@ -25,11 +25,10 @@ public class Interface  {
         this.mac_address = mac_address;
     }
     
-    public Interface(String index, String ip_address, String subnet_mask, String mac_address) {
+    public Interface(String index,String description, String ip_address, String mac_address) {
         this.index = index;
-        this.description = "";
+        this.description = description;
         this.ip_address = ip_address;
-        this.subnet_mask = subnet_mask;
         this.mac_address = mac_address;
     }
     
@@ -89,6 +88,10 @@ public class Interface  {
     
     @Override
     public String toString() {
-        return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\tmask: "+subnet_mask+"\n\tmac: "+mac_address;
+        if(subnet_mask != null){
+            return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\tmask: "+subnet_mask+"\n\tmac: "+mac_address;
+        }else{
+            return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\ttype: "+mac_address;
+        }
     }
 }

@@ -1,5 +1,7 @@
 package and;
 
+import java.util.ArrayList;
+
 public abstract class Agent {
     private boolean visited;
 
@@ -16,6 +18,8 @@ public abstract class Agent {
     }
     
     public abstract Boolean has_IPaddress(String IP);
+    
+    public abstract ArrayList<Interface> get_UsedInterfaces();
     
     @Override
     public abstract String toString();

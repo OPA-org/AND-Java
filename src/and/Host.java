@@ -1,5 +1,7 @@
 package and;
 
+import java.util.ArrayList;
+
 public class Host extends Agent{
     private Interface anInterface;
 
@@ -24,6 +26,11 @@ public class Host extends Agent{
     @Override
     public String toString() {
         return "PC of IP: " + anInterface.getIp_address();
+    }
+
+    @Override
+    public ArrayList<Interface> get_UsedInterfaces() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     

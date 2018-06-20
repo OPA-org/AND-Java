@@ -16,14 +16,31 @@ public class AND {
         System.out.println("IPs:-");
         for (String s : IPs) {
             System.out.println(s);
-        }
+        }*/
+        
+        /*ArrayList<String> IPs = new ArrayList<>();
+        IPs.add("192.168.3.1");
+        IPs.add("192.168.2.1");
+        IPs.add("192.168.3.2");
+        IPs.add("192.168.10.1");
+        IPs.add("192.168.2.2");
+        IPs.add("192.168.10.2");
+        IPs.add("192.168.4.1");
+        IPs.add("192.168.6.1");
+        IPs.add("192.168.6.2");
+        IPs.add("192.168.6.3");
+        IPs.add("192.168.5.1");
+        IPs.add("192.168.5.3");
+        IPs.add("192.168.5.2");
+        IPs.add("192.168.4.2");
+        
         ArrayList<Agent> agents = new ArrayList<>();
         create_nodes(IPs, agents);
         System.out.println("Agents:-");
         for (Agent a : agents) {
             System.out.println(a);
         }
-
+        
         ArrayList<Connection> Connections = create_connections(agents);
         
         System.out.println("Connections:-");
@@ -40,8 +57,24 @@ public class AND {
         oids.add(OIDS.ipNetToMediaNetAddress);
         System.out.println(SNMP_methods.getfromwalk_multi("192.168.5.2", OIDS.ipNetToMediaTable, oids));*/
         //System.out.println(SNMP_methods.getfromsnmpget_single("192.168.5.3", OIDS.dot1dBaseBridgeAddress));
-        Switch sw = create_Switch("192.168.5.3");
-        System.err.println(sw);
+        /*Switch sw = create_Switch("192.168.5.3");
+        ArrayList<Interface> usedinf = sw.get_UsedInterfaces();
+                if (!usedinf.isEmpty()) {
+                    for (int j = 0; j < usedinf.size(); j++) {
+                        ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(j).getIp_address(),
+                                OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
+                        ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
+                        for (String s : tempnh) {
+                            if (sw.has_IPaddress(s)) {
+                                nexthops.remove(s);
+                            } else if (!MiscellaneousMethods.isHostIP(s)) {
+                                nexthops.remove(s);
+                            }
+                        }
+                        System.out.println("");
+                    }
+                }*/
+        
     }
 
     static void create_nodes(ArrayList<String> IPs, ArrayList<Agent> agents) throws IOException, Exception {
@@ -63,9 +96,21 @@ public class AND {
                     if(binsysserv.charAt(2) == '1'){
                         //L3 yes
                         //hnshof el bridge mib
-                        if(!SNMP_methods.getfromsnmpget_single(IP, OIDS.dot1dBaseBridgeAddress).equals("error")){
+                        String basebridgeaddr = SNMP_methods.getfromsnmpget_single(IP, OIDS.dot1dBaseBridgeAddress);
+                        if(!basebridgeaddr.equals("error")){
                             //bridge Mib yes
                             //multiple interface with same mac addr
+                            if(basebridgeaddr.equals("00:00:00:00:00:00")){
+                                Agent router = create_Router(IP);
+                                if (!agents.contains(router)) {
+                                    agents.add(router);
+                                }
+                            } else {
+                                Agent switchh = create_Switch(IP);
+                                if (!agents.contains(switchh)) {
+                                    agents.add(switchh);
+                                }
+                            }
                         }else{
                             //bride mib no
                             if(binsysserv.charAt(6) == '1'){
@@ -78,7 +123,10 @@ public class AND {
                                     }
                                 }else{
                                     //switch
-                                    
+                                    Agent switchh = create_Switch(IP);
+                                    if (!agents.contains(switchh)) {
+                                        agents.add(switchh);
+                                    }
                                 }
                             }else{
                                 //L7 no
@@ -94,6 +142,10 @@ public class AND {
                         if(!SNMP_methods.getfromsnmpget_single(IP, OIDS.dot1dBaseBridgeAddress).equals("error")){
                             //bridge Mib yes
                             //switch
+                            Agent switchh = create_Switch(IP);
+                            if (!agents.contains(switchh)) {
+                                agents.add(switchh);
+                            }
                         }else{
                             //bride mib no
                             Interface inter = new Interface(IP);
@@ -108,6 +160,10 @@ public class AND {
                         if(binsysserv.charAt(3) == '1'){
                             //L4 yes
                             //switch
+                            Agent switchh = create_Switch(IP);
+                            if (!agents.contains(switchh)) {
+                                agents.add(switchh);
+                            }
                         }else{
                             //L4 no
                             if(binsysserv.charAt(6) == '1'){
@@ -120,7 +176,10 @@ public class AND {
                                     }
                                 }else{
                                     //switch
-                                    
+                                    Agent switchh = create_Switch(IP);
+                                    if (!agents.contains(switchh)) {
+                                        agents.add(switchh);
+                                    }
                                 }
                             }else{
                                 //L7 no
@@ -221,44 +280,48 @@ public class AND {
         ArrayList<Connection> Connections = new ArrayList<>();
         for (int i = 0; i < agents.size(); i++) {
             Agent A = agents.get(i);
-            if (A.getClass().getSimpleName().equals("Router")) {
-                ArrayList<Interface> usedinf = ((Router) A).get_UsedInterfaces();
+            if (!A.getClass().getSimpleName().equals("Host")) {
+                ArrayList<Interface> usedinf = A.get_UsedInterfaces();
                 if (!usedinf.isEmpty()) {
                     for (int j = 0; j < usedinf.size(); j++) {
                         ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(j).getIp_address(),
                                 OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
                         ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
                         for (String s : tempnh) {
-                            if (((Router) A).has_IPaddress(s)) {
+                            if (A.has_IPaddress(s)) {
                                 nexthops.remove(s);
                             } else if (!MiscellaneousMethods.isHostIP(s)) {
                                 nexthops.remove(s);
                             }
                         }
-                        if (i == 0) {
-                            for (String s : nexthops) {
-                                String Mask = usedinf.get(j).getSubnet_mask();
-                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
-                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
-                                if (infNetAddress.equals(ipNetAddress)) {
-                                    Agent B = get_Agent_by_Ip(agents, s);
-                                    if (B != null) {
-                                        Connections.add(new Connection(A, B, ipNetAddress, Mask));
+                        if (A.getClass().getSimpleName().equals("Router")) {
+                            if (i == 0) {
+                                for (String s : nexthops) {
+                                    String Mask = usedinf.get(j).getSubnet_mask();
+                                    String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
+                                    String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
+                                    if (infNetAddress.equals(ipNetAddress)) {
+                                        Agent B = get_Agent_by_Ip(agents, s);
+                                        if (B != null) {
+                                            Connections.add(new Connection(A, B, ipNetAddress, Mask));
+                                        }
+                                    }
+                                }
+                            } else {
+                                for (String s : nexthops) {
+                                    String Mask = usedinf.get(j).getSubnet_mask();
+                                    String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
+                                    String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
+                                    if (infNetAddress.equals(ipNetAddress)) {
+                                        Agent B = get_Agent_by_Ip(agents, s);
+                                        if (B != null && !has_similar_connection(Connections, A, B)) {
+                                            Connections.add(new Connection(A, B, ipNetAddress, Mask));
+                                        }
                                     }
                                 }
                             }
-                        } else {
-                            for (String s : nexthops) {
-                                String Mask = usedinf.get(j).getSubnet_mask();
-                                String infNetAddress = MiscellaneousMethods.getNetworkIP(usedinf.get(j).getIp_address(), Mask);
-                                String ipNetAddress = MiscellaneousMethods.getNetworkIP(s, Mask);
-                                if (infNetAddress.equals(ipNetAddress)) {
-                                    Agent B = get_Agent_by_Ip(agents, s);
-                                    if (B != null && !has_similar_connection(Connections, A, B)) {
-                                        Connections.add(new Connection(A, B, ipNetAddress, Mask));
-                                    }
-                                }
-                            }
+                        }else{
+                            
                         }
                     }
                 }
@@ -318,16 +381,16 @@ public class AND {
                     + "\tIP: " +interfaces.get(3).get(i) 
                     +"\tMASK: "+ interfaces.get(4).get(i));
                 }*/
-        ArrayList<Interface> routerifs = new ArrayList<>();
+        ArrayList<Interface> switcifs = new ArrayList<>();
         for (int i = 0; i < interfaces.get(0).size(); i++) {
             Interface routerif = new Interface(interfaces.get(0).get(i),
                     interfaces.get(1).get(i),
                     interfaces.get(3).get(i),
                     interfaces.get(4).get(i),
                     interfaces.get(2).get(i));
-            routerifs.add(routerif);
+            switcifs.add(routerif);
         }
-        Router router = new Router(sysdescr, sysname, routerifs);
+        Router router = new Router(sysdescr, sysname, switcifs);
         return router;
     }
     public static Switch create_Switch(String IP) throws Exception {
@@ -348,12 +411,7 @@ public class AND {
         oids.add(OIDS.ipNetToMediaNetAddress);
         oids.add(OIDS.ipNetToMediaPhysAddress);
         ArrayList<ArrayList<String>> ntm = SNMP_methods.getfromwalk_multi(IP, OIDS.ipNetToMediaTable, oids);
-        oids = new ArrayList<>();
-        oids.add(OIDS.ipRouteIfIndex);
-        oids.add(OIDS.ipRouteMask);
-        ArrayList<ArrayList<String>> iproutes = SNMP_methods.getfromwalk_multi(IP, OIDS.ipRouteTable, oids);
         ArrayList<String> ips = new ArrayList<>();
-        ArrayList<String> masks = new ArrayList<>();
         for (int i = 0; i < interfaces.get(0).size(); i++) {
             if (ntm.get(2).contains(interfaces.get(1).get(i))) {
                 int index = ntm.get(2).indexOf(interfaces.get(1).get(i));
@@ -366,15 +424,8 @@ public class AND {
             } else {
                 ips.add("");
             }
-            if (iproutes.get(0).contains(interfaces.get(0).get(i))) {
-                int index = iproutes.get(0).indexOf(interfaces.get(0).get(i));
-                masks.add(iproutes.get(1).get(index));
-            } else {
-                masks.add("");
-            }
         }
         interfaces.add(ips);
-        interfaces.add(masks);
         /*for(int i = 0; i < interfaces.get(0).size(); i++){
                     System.out.println("ifIndex: " +interfaces.get(0).get(i) 
                     + "\tifPhyaddress: " +interfaces.get(1).get(i)
@@ -386,7 +437,6 @@ public class AND {
             Interface routerif = new Interface(interfaces.get(0).get(i),
                     interfaces.get(1).get(i),
                     interfaces.get(3).get(i),
-                    interfaces.get(4).get(i),
                     interfaces.get(2).get(i));
             routerifs.add(routerif);
         }
