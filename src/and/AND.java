@@ -57,24 +57,29 @@ public class AND {
         oids.add(OIDS.ipNetToMediaNetAddress);
         System.out.println(SNMP_methods.getfromwalk_multi("192.168.5.2", OIDS.ipNetToMediaTable, oids));*/
         //System.out.println(SNMP_methods.getfromsnmpget_single("192.168.5.3", OIDS.dot1dBaseBridgeAddress));
-        /*Switch sw = create_Switch("192.168.5.3");
-        ArrayList<Interface> usedinf = sw.get_UsedInterfaces();
-                if (!usedinf.isEmpty()) {
-                    for (int j = 0; j < usedinf.size(); j++) {
-                        ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(j).getIp_address(),
-                                OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
-                        ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
-                        for (String s : tempnh) {
-                            if (sw.has_IPaddress(s)) {
-                                nexthops.remove(s);
-                            } else if (!MiscellaneousMethods.isHostIP(s)) {
-                                nexthops.remove(s);
-                            }
-                        }
-                        System.out.println("");
+//        Switch sw = create_Switch("192.168.5.3");
+        /*ArrayList<Interface> usedinf = sw.get_UsedInterfaces();
+        if (!usedinf.isEmpty()) {
+            for (int j = 0; j < usedinf.size(); j++) {
+                ArrayList<String> nexthops = SNMP_methods.getfromwalk_single(usedinf.get(j).getIp_address(),
+                        OIDS.ipNetToMediaTable, OIDS.ipNetToMediaNetAddress);
+                ArrayList<String> tempnh = (ArrayList<String>) nexthops.clone();
+                for (String s : tempnh) {
+                    if (sw.has_IPaddress(s)) {
+                        nexthops.remove(s);
+                    } else if (!MiscellaneousMethods.isHostIP(s)) {
+                        nexthops.remove(s);
                     }
-                }*/
-        
+                }
+                System.out.println("");
+            }
+        }*/
+        //System.out.println(SNMP_methods.getfromsnmpget_single("192.168.5.6", OIDS.sysName));
+        System.out.println(SNMP_methods.getfromwalk_single("192.168.5.3", "1.3.6.1.2.1.17.4.3", "1.3.6.1.2.1.17.4.3.1"));
+        Switch sw = create_Switch("192.168.5.3");
+        for (Interface interface1 : sw.getInterfaces()) {
+                   System.out.println(interface1.toString());
+        }
     }
 
     static void create_nodes(ArrayList<String> IPs, ArrayList<Agent> agents) throws IOException, Exception {
@@ -257,6 +262,7 @@ public class AND {
             }
         }
     }
+    
     public static Agent get_Agent_by_Ip(ArrayList<Agent>agents,String ip){
         for (Agent B : agents) {
             if(B.has_IPaddress(ip))
@@ -265,18 +271,18 @@ public class AND {
         return null;
     }
     
-    public static Boolean has_similar_connection(ArrayList<Connection> connections,Agent A,Agent B){
-        for(Connection c : connections){
-            if(c.getA().equals(A) && c.getB().equals(B)){
-                return true;
-            }else if(c.getA().equals(B) && c.getB().equals(A)){
-                return true;
-            }
-        }
-        return false;
-    }
+//    public static Boolean has_similar_connection(ArrayList<Connection> connections,Agent A,Agent B){
+//        for(Connection c : connections){
+//            if(c.getA().equals(A) && c.getB().equals(B)){
+//                return true;
+//            }else if(c.getA().equals(B) && c.getB().equals(A)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
     
-    public static ArrayList<Connection> create_connections(ArrayList<Agent> agents) throws IOException{
+    /*public static ArrayList<Connection> create_connections(ArrayList<Agent> agents) throws IOException{
         ArrayList<Connection> Connections = new ArrayList<>();
         for (int i = 0; i < agents.size(); i++) {
             Agent A = agents.get(i);
@@ -328,7 +334,105 @@ public class AND {
             }
         }
         return Connections;
+    }*/
+    
+    
+    
+    public static ArrayList<Connection> create_connections(ArrayList<Agent> agents) throws IOException{
+        ArrayList<Switch> switches = get_switches(agents);
+        ArrayList<Router> routers = get_routers(agents);
+        ArrayList<Host> hosts = get_hosts(agents);
+        
+        ArrayList<AgentPair> switchpairs = get_pairs((ArrayList<Agent>)((Object)switches));
+        ArrayList<AgentPair> routerpairs = get_pairs((ArrayList<Agent>)((Object)routers));
+        ArrayList<AgentPair> switchrouterpairs = get_pairs((ArrayList<Agent>)((Object)switches),(ArrayList<Agent>)((Object)routers));
+        
+        ArrayList<Connection> Connections = new ArrayList<>();
+        
+//        ArrayList<Connection> switch_to_switch = Switch_to_switch_connectivity(switchpairs);
+//        ArrayList<Connection> switch_to_router = Switch_to_router_connectivity(switchrouterpairs);
+//        ArrayList<Connection> router_to_router = Router_to_router_connectivity(routerpairs);
+//        ArrayList<Connection> switchrouter_to_host = Switch_and_router_to_host_connectivity();
+//        
+        return Connections;
+    
     }
+    
+    public static ArrayList<Switch> get_switches(ArrayList<Agent> agents){
+        ArrayList<Switch> switches = new ArrayList<>();
+        for(Agent agent:agents){
+            if(agent.getClass().getSimpleName().equals("Switch")){
+                switches.add((Switch)agent);
+            }
+        }
+        return switches;
+    }
+    
+    public static ArrayList<Router> get_routers(ArrayList<Agent> agents){
+        ArrayList<Router> routers = new ArrayList<>();
+        for(Agent agent:agents){
+            if(agent.getClass().getSimpleName().equals("Router")){
+                routers.add((Router)agent);
+            }
+        }
+        return routers;
+    }
+    
+    public static ArrayList<Host> get_hosts(ArrayList<Agent> agents){
+        ArrayList<Host> hosts = new ArrayList<>();
+        for(Agent agent:agents){
+            if(agent.getClass().getSimpleName().equals("Host")){
+                hosts.add((Host)agent);
+            }
+        }
+        return hosts;
+    }
+    
+    public static ArrayList<AgentPair> get_pairs(ArrayList<Agent> agents){
+        ArrayList<AgentPair> agentspairs = new ArrayList<>();
+        for(int i = 0 ; i < agents.size(); i++){
+            for(int j = i+1 ; j < agents.size() ; j++){
+                AgentPair pair = new AgentPair(agents.get(i),agents.get(j));
+                agentspairs.add(pair);
+            }
+        }
+        return agentspairs;
+    }
+    
+    public static ArrayList<AgentPair> get_pairs(ArrayList<Agent> agents1,ArrayList<Agent> agents2){
+        ArrayList<AgentPair> agentspairs = new ArrayList<>();
+        for(int i = 0 ; i < agents1.size(); i++){
+            for(int j = 0 ; j < agents2.size() ; j++){
+                AgentPair pair = new AgentPair(agents1.get(i),agents2.get(j));
+                agentspairs.add(pair);
+            }
+        }
+        return agentspairs;
+    }
+    
+//    public static ArrayList<Connection> Switch_to_switch_connectivity(ArrayList<AgentPair> switchpairs){
+//        for (int i = 0; i < switchpairs.size(); i++) {
+//            ArrayList<String> Agent1_MacList = ((Switch)switchpairs.get(i).getAgent1()).get_mac_addresses();
+//            ArrayList<String> Agent2_MacList = ((Switch)switchpairs.get(i).getAgent2()).get_mac_addresses();
+//            for (String Agent1_MacList_Mac :Agent1_MacList) {
+//                
+//                if () {
+//                    continue;
+//                }
+//                ArrayList<AFT> afts_Agent1 = get_Aft();
+//                for (String Agent2_MacList_Mac :Agent2_MacList) {
+//                
+//                if () {
+//                    continue;
+//                }
+//                ArrayList<AFT> afts_Agent2 = get_Aft();
+//                    if (afts_Agent1.contains(Agent2_MacList_Mac)&&afts_Agent2.contains(Agent1_MacList_Mac)) {
+//                        
+//                    }
+//            }
+//            }
+//        }
+//    }
     
     public static Router create_Router(String IP) throws Exception {
         ArrayList<String> oids = new ArrayList<>();
@@ -375,19 +479,13 @@ public class AND {
         }
         interfaces.add(ips);
         interfaces.add(masks);
-        /*for(int i = 0; i < interfaces.get(0).size(); i++){
-                    System.out.println("ifIndex: " +interfaces.get(0).get(i) 
-                    + "\tifPhyaddress: " +interfaces.get(1).get(i)
-                    + "\tIP: " +interfaces.get(3).get(i) 
-                    +"\tMASK: "+ interfaces.get(4).get(i));
-                }*/
         ArrayList<Interface> switcifs = new ArrayList<>();
         for (int i = 0; i < interfaces.get(0).size(); i++) {
             Interface routerif = new Interface(interfaces.get(0).get(i),
-                    interfaces.get(1).get(i),
+                    interfaces.get(2).get(i),
                     interfaces.get(3).get(i),
                     interfaces.get(4).get(i),
-                    interfaces.get(2).get(i));
+                    interfaces.get(1).get(i));
             switcifs.add(routerif);
         }
         Router router = new Router(sysdescr, sysname, switcifs);
@@ -426,21 +524,15 @@ public class AND {
             }
         }
         interfaces.add(ips);
-        /*for(int i = 0; i < interfaces.get(0).size(); i++){
-                    System.out.println("ifIndex: " +interfaces.get(0).get(i) 
-                    + "\tifPhyaddress: " +interfaces.get(1).get(i)
-                    + "\tIP: " +interfaces.get(3).get(i) 
-                    +"\tMASK: "+ interfaces.get(4).get(i));
-                }*/
-        ArrayList<Interface> routerifs = new ArrayList<>();
+        ArrayList<Interface> switchifs = new ArrayList<>();
         for (int i = 0; i < interfaces.get(0).size(); i++) {
-            Interface routerif = new Interface(interfaces.get(0).get(i),
-                    interfaces.get(1).get(i),
+            Interface switchif = new Interface(interfaces.get(0).get(i),
+                    interfaces.get(2).get(i),
                     interfaces.get(3).get(i),
-                    interfaces.get(2).get(i));
-            routerifs.add(routerif);
+                    interfaces.get(1).get(i));
+            switchifs.add(switchif);
         }
-        Switch switchh = new Switch(sysdescr, sysname, routerifs);
+        Switch switchh = new Switch(sysdescr, sysname, switchifs);
         return switchh;
     }
 }

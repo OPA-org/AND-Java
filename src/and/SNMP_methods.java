@@ -75,7 +75,7 @@ public class SNMP_methods {
     
     public static ArrayList<ArrayList<String>> getfromwalk_multi(String ip,String TableOID,ArrayList<String> EntryOIDs) throws IOException{
         CommunityTarget target = init_walk(ip);
-
+        //System.out.println(target.toString());
         ArrayList<ArrayList<String>> entries = new ArrayList<>();
         
         Map<String, String> result = doWalk("."+TableOID.trim(), target); // ifTable, mib-2 interfaces

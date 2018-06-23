@@ -44,6 +44,15 @@ public class Switch extends Agent {
         }
         return null;
     }*/
+    
+    public ArrayList<String> get_mac_addresses(){
+        ArrayList<String> mac_addresses = new ArrayList<>();
+        for(Interface intf : interfaces){
+            mac_addresses.add(intf.getMac_address());
+        }
+        return mac_addresses;
+    }
+    
     public Interface get_Interface_by_Interface_IP_address_property(String ip_address){
         for (int i=0;i<interfaces.size();i++){
             if (interfaces.get(i).getIp_address()==ip_address)

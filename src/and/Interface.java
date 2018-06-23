@@ -88,10 +88,14 @@ public class Interface  {
     
     @Override
     public String toString() {
-        if(subnet_mask != null){
-            return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\tmask: "+subnet_mask+"\n\tmac: "+mac_address;
+        if(ip_address != ""){
+            if (subnet_mask != null) {
+                return "Interface\n" + "\tindex: " + this.index + "\n\tdescription: " + description + "\n\tip: " + ip_address + "\n\tmask: " + subnet_mask + "\n\tmac: " + mac_address;
+            } else {
+                return "Interface\n" + "\tindex: " + this.index + "\n\tdescription: " + description + "\n\tip: " + ip_address + "\n\tmac: " + mac_address;
+            }
         }else{
-            return "Interface\n"+"\tindex: "+this.index +"\n\tip: "+ip_address+"\n\ttype: "+mac_address;
+            return "Interface\n" + "\tindex: " + this.index + "\n\tdescription: " + description +"\n\tmac: " + mac_address;
         }
     }
 }
