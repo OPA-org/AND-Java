@@ -9,6 +9,10 @@ public class OIDS {
     
     public static final String dot1dStpProtocolSpecification = "1.3.6.1.2.1.17.2.1";
     
+    public static final String dot1dTpFdbTable = "1.3.6.1.2.1.17.4.3";
+    public static final String dot1dTpFdbAddress = "1.3.6.1.2.1.17.4.3.1.1";
+    public static final String dot1dTpFdbPort = "1.3.6.1.2.1.17.4.3.1.2";
+
     public static final String ifTable = "1.3.6.1.2.1.2.2";
     public static final String ifIndex = "1.3.6.1.2.1.2.2.1.1";
     public static final String ifDescr = "1.3.6.1.2.1.2.2.1.2";

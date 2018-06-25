@@ -25,12 +25,87 @@ import org.snmp4j.util.TreeUtils;
 
 public class SNMP_methods {
     
+//    private static ResponseEvent get(OID oids[], int type,Target target) throws IOException {
+//        
+//        TransportMapping<? extends Address> transport = new DefaultUdpTransportMapping();
+//        Snmp snmp = new Snmp(transport);
+//        transport.listen();
+//        
+//        PDU pdu = new PDU();
+//        for (OID oid : oids) {
+//            pdu.add(new VariableBinding(oid));
+//        }
+//        pdu.setType(type);
+//
+//        pdu.setMaxRepetitions(50); // This makes GETBULK work as expected
+//
+//        ResponseEvent event = snmp.send(pdu, target, null);
+//        snmp.close();
+//        if (event != null) {
+//            return event;
+//        }
+//        throw new RuntimeException("GET timed out");
+//    }
+//    
+//    private static PDU getVariableBinding(OID oid, int type, Target target) throws IOException {
+//        ResponseEvent event = get(new OID[] { oid }, type, target);
+//
+//        if (event == null || event.getResponse() == null) {
+//            //warn(oid);
+//            return null;
+//        }
+//
+//        return event.getResponse();
+//    }
+//    
+//    private static Map<String, String> doWalk(String tableOid, Target target) throws IOException {
+//        String oid = tableOid;
+//        Map<String, String> result = new TreeMap<>();
+//        
+//        while (oid.startsWith(tableOid)) {
+//            PDU pdu = getVariableBinding(new OID(oid), PDU.GETBULK, target);
+//            if (pdu == null || pdu.size() == 0) return result;
+//
+//            for (int i=0; i<pdu.size(); i++) {
+//                VariableBinding var = pdu.get(i);
+//                if (var == null){
+//                    return result;
+//                }
+//
+//                oid = var.getOid().toString();
+//                if (oid.startsWith(tableOid)) {
+//                    result.put(oid, var.getVariable().toString());
+//                } else {
+//                    return result;
+//                }
+//            }
+//        }
+//        return result;
+//    }
+//
+//    public static ArrayList<String> getfromwalk_single(String ip,String TableOID,String EntryOID) throws IOException{
+//        CommunityTarget target = init_walk(ip);
+//
+//        ArrayList<String> entrydata = new ArrayList<>();
+//        
+//        Map<String, String> result = doWalk(/*"."+*/TableOID.trim(), target); // ifTable, mib-2 interfaces //editttt
+//                                            // 1.3.6.1.2.1.2.2  ,  1.3.6.1.2.1.4.21 , 1.3.6.1.2.1.4.22  
+//        System.out.println(result);
+//        for (Map.Entry<String, String> entry : result.entrySet()) {
+//            if (entry.getKey().startsWith(EntryOID.trim() + ".")) { 
+//                entrydata.add(entry.getValue());
+//            }
+//        }
+//
+//        return entrydata;
+//    }
+    
     private static Map<String, String> doWalk(String tableOid, Target target) throws IOException {
         Map<String, String> result = new TreeMap<>();
         TransportMapping<? extends Address> transport = new DefaultUdpTransportMapping();
         Snmp snmp = new Snmp(transport);
         transport.listen();
-
+        
         TreeUtils treeUtils = new TreeUtils(snmp, new DefaultPDUFactory());
         List events = treeUtils.getSubtree(target, new OID(tableOid));
         if (events == null || events.size() == 0) {
@@ -70,6 +145,7 @@ public class SNMP_methods {
         target.setRetries(2);
         target.setTimeout(1500);
         target.setVersion(SnmpConstants.version2c);
+        //System.out.println("MaxSizeREQPDU: "+target.getMaxSizeRequestPDU());
         return target;
     }
     
@@ -100,10 +176,9 @@ public class SNMP_methods {
         ArrayList<String> entrydata = new ArrayList<>();
         
         Map<String, String> result = doWalk("."+TableOID.trim(), target); // ifTable, mib-2 interfaces
-                                            // 1.3.6.1.2.1.2.2  ,  1.3.6.1.2.1.4.21 , 1.3.6.1.2.1.4.22
-                                            
+                                            // 1.3.6.1.2.1.2.2  ,  1.3.6.1.2.1.4.21 , 1.3.6.1.2.1.4.22  
         for (Map.Entry<String, String> entry : result.entrySet()) {
-            if (entry.getKey().startsWith("." + EntryOID.trim() + ".")) {
+            if (entry.getKey().startsWith("." + EntryOID.trim() + ".")) { 
                 entrydata.add(entry.getValue());
             }
         }

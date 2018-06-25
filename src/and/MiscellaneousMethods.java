@@ -73,4 +73,31 @@ public class MiscellaneousMethods {
         return octetsval;
     }
     
+    public static Boolean Mac_is_connected(String Mac_Address, ArrayList<InterfaceConnection> connections){
+        for (InterfaceConnection connection : connections) {
+            if(connection.getInterfaceA().getMac_address().equals(Mac_Address)||connection.getInterfaceB().getMac_address().equals(Mac_Address)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static Boolean IP_is_connected(String IP_Address, ArrayList<InterfaceConnection> connections){
+        for (InterfaceConnection connection : connections) {
+            if(connection.getInterfaceA().getIp_address().equals(IP_Address)||connection.getInterfaceB().getIp_address().equals(IP_Address)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static Boolean Interface_is_connected(Interface intf, ArrayList<InterfaceConnection> connections){
+        for (InterfaceConnection connection : connections) {
+            if(connection.getInterfaceA().equals(intf)||connection.getInterfaceB().equals(intf)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
