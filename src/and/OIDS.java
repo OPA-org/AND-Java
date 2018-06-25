@@ -27,6 +27,7 @@ public class OIDS {
     public static final String ipRouteMask = "1.3.6.1.2.1.4.21.1.11";
 
     public static final String ipAddrTable = "1.3.6.1.2.1.4.20";
+    public static final String ipAdEntIfIndex = "1.3.6.1.2.1.4.20.1.2";
     public static final String ipAdEntAddr = "1.3.6.1.2.1.4.20.1.1";
     public static final String ipAdEntNetMask = "1.3.6.1.2.1.4.20.1.3";
 

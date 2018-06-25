@@ -10,12 +10,14 @@ public class InterfaceConnection {
     private Interface interfaceB;
     private Agent agentA;
     private Agent agentB;
+    private String Type;
     
-    public InterfaceConnection(Interface interfaceA, Interface interfaceB, Agent agentA, Agent agentB) {
+    public InterfaceConnection(Interface interfaceA, Interface interfaceB, Agent agentA, Agent agentB, String Type) {
         this.interfaceA = interfaceA;
         this.interfaceB = interfaceB;
         this.agentA = agentA;
         this.agentB = agentB;
+        this.Type = Type;
     }
     
     public Interface getInterfaceA() {
@@ -49,9 +51,17 @@ public class InterfaceConnection {
     public void setAgentB(Agent agentB) {
         this.agentB = agentB;
     }
+
+    public String getType() {
+        return Type;
+    }
+
+    public void setType(String Type) {
+        this.Type = Type;
+    }
     
     public String toString(){
-        return agentA.toString() +"\n" + interfaceA.toString() + "\n" + agentB.toString() + "\n" + interfaceB.toString();
+        return Type +"\n"+agentA.toString() +"\n" + interfaceA.toString() + "\n" + agentB.toString() + "\n" + interfaceB.toString();
     }
     
 }

@@ -120,6 +120,15 @@ public class Switch extends Agent {
         }
         return "";
     }
+    
+    public String getMask() {
+        for (Interface aInterface : interfaces) {
+            if (!aInterface.getIp_address().isEmpty() && aInterface.getIp_address() != null) {
+                return aInterface.getSubnet_mask();
+            }
+        }
+        return "";
+    }
 
     @Override
     public Interface GetInterface_byMacAddress(String mac_address) {

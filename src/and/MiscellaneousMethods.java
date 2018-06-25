@@ -41,6 +41,14 @@ public class MiscellaneousMethods {
         return Networkip;
     }
     
+    public static Boolean isIPinSubnet(String IP,String NetworkIP,String NetworkMask){
+        if(getNetworkIP(IP, NetworkMask).equals(NetworkIP)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
     public static String converttobinary(int n){
         String Binary = Integer.toBinaryString(n);
         if(Binary.length() < 8){
