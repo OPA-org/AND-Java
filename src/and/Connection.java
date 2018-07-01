@@ -1,59 +1,67 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package and;
 
 public class Connection {
-    private int ID;
-    private Agent A;
-    private Agent B;
-    private String Subnet;
-    private String Mask;
-    private static int counter = 1;
+    private Interface interfaceA;
+    private Interface interfaceB;
+    private Agent agentA;
+    private Agent agentB;
+    private String Type;
     
-    public Connection(Agent A, Agent B,String Subnet,String Mask) {
-        this.ID = this.counter++;
-        this.A = A;
-        this.B = B;
-        this.Subnet = Subnet;
-        this.Mask = Mask;
-    }
-
-    public String getSubnet() {
-        return Subnet;
-    }
-
-    public void setSubnet(String Subnet) {
-        this.Subnet = Subnet;
-    }
-
-    public String getMask() {
-        return Mask;
-    }
-
-    public void setMask(String Mask) {
-        this.Mask = Mask;
+    public Connection(Interface interfaceA, Interface interfaceB, Agent agentA, Agent agentB, String Type) {
+        this.interfaceA = interfaceA;
+        this.interfaceB = interfaceB;
+        this.agentA = agentA;
+        this.agentB = agentB;
+        this.Type = Type;
     }
     
-    public int getID() {
-        return ID;
+    public Interface getInterfaceA() {
+        return interfaceA;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setInterfaceA(Interface interfaceA) {
+        this.interfaceA = interfaceA;
     }
 
-    public Agent getA() {
-        return A;
+    public Interface getInterfaceB() {
+        return interfaceB;
     }
 
-    public void setA(Agent A) {
-        this.A = A;
+    public void setInterfaceB(Interface interfaceB) {
+        this.interfaceB = interfaceB;
     }
 
-    public Agent getB() {
-        return B;
+    public Agent getAgentA() {
+        return agentA;
     }
 
-    public void setB(Agent B) {
-        this.B = B;
+    public void setAgentA(Agent agentA) {
+        this.agentA = agentA;
+    }
+
+    public Agent getAgentB() {
+        return agentB;
+    }
+
+    public void setAgentB(Agent agentB) {
+        this.agentB = agentB;
+    }
+
+    public String getType() {
+        return Type;
+    }
+
+    public void setType(String Type) {
+        this.Type = Type;
+    }
+    
+    public String toString(){
+        return Type +"\n"+agentA.toString() +"\n" + interfaceA.toString() + "\n" + agentB.toString() + "\n" + interfaceB.toString();
     }
     
 }

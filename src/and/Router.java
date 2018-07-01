@@ -135,7 +135,7 @@ public class Router extends Agent {
     }
     
     @Override
-    public Interface GetInterface_index(String index) {
+    public Interface GetInterface_byindex(String index) {
         for (Interface aInterface : interfaces) {
             if (aInterface.getIndex().equals(index)) {
                 return aInterface;

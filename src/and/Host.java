@@ -1,15 +1,24 @@
 package and;
 
 import java.util.ArrayList;
-import org.snmp4j.smi.IpAddress;
 
 public class Host extends Agent {
 
     private Interface anInterface;
-
+    
+    private String name = "";
+    private String descr = "";
+    
     public Host(Interface anInterface) {
         super(false);
         this.anInterface = anInterface;
+    }
+    
+    public Host(Interface anInterface,String name,String descr) {
+        super(false);
+        this.anInterface = anInterface;
+        this.name = name;
+        this.descr = descr;
     }
 
     public Interface getAnInterface() {
@@ -38,7 +47,11 @@ public class Host extends Agent {
 
     @Override
     public String toString() {
-        return "PC of IP: " + anInterface.getIp_address();
+        if(name.equals("")){
+            return "PC of IP: " + anInterface.getIp_address();
+        }else{
+            return name;
+        }
     }
 
     @Override
@@ -57,7 +70,7 @@ public class Host extends Agent {
     }
     
     @Override
-    public Interface GetInterface_index(String index) {
+    public Interface GetInterface_byindex(String index) {
         return this.anInterface;
     }
 }

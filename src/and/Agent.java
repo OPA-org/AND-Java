@@ -26,11 +26,9 @@ public abstract class Agent {
 
     public abstract Interface GetInterface_byMacAddress(String mac_address);
     
-    public abstract Interface GetInterface_index(String index);
+    public abstract Interface GetInterface_byindex(String index);
     
     public abstract ArrayList<String> get_mac_addresses();
-    
-    
 
     @Override
     public abstract String toString();
