@@ -123,7 +123,7 @@ public class Switch extends Agent {
     
     public String getMask() {
         for (Interface aInterface : interfaces) {
-            if (!aInterface.getIp_address().isEmpty() && aInterface.getIp_address() != null) {
+            if (!aInterface.getSubnet_mask().isEmpty() && aInterface.getSubnet_mask()!= null) {
                 return aInterface.getSubnet_mask();
             }
         }

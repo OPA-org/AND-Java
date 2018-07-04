@@ -9,7 +9,7 @@ public class AND {
     public static void main(String[] args) throws IOException, Exception {
         ArrayList<String> R = new ArrayList<>();
         ArrayList<String> IPs = new ArrayList<>();
-        device_discovery("192.168.10.1", R, IPs);
+        device_discovery("192.168.10.2", R, IPs);
         System.out.println("IPs:-");
         for (String s : IPs) {
             System.out.println(s);
@@ -22,8 +22,13 @@ public class AND {
         }
         
         ArrayList<Connection> Connections = create_connections(agents);
-        Connections = Filter_Connections(Connections);
         System.out.println("Connections:-");
+        for(Connection c: Connections){
+            System.out.println(c.toString()+
+                    "\n===========================");
+        }
+        Connections = Filter_Connections(Connections);
+        System.out.println("After Filter Connections:-");
         for(Connection c: Connections){
             System.out.println(c.toString()+
                     "\n===========================");
@@ -33,7 +38,7 @@ public class AND {
         for (Agent a : agents) {
             System.out.println(a);
         }
-        System.out.println("Connections:-");
+        System.out.println("After Hidden SwitchesConnections:-");
         for(Connection c: Connections){
             System.out.println(c.toString()+
                     "\n===========================");
@@ -420,6 +425,9 @@ public class AND {
                         String switch_interface_index = aftsports_Switch.get(index);
                         Interface Switch_Interface = switchrouterpairs.get(i).getAgent1().GetInterface_byindex(switch_interface_index);
                         Interface Router_Interface = switchrouterpairs.get(i).getAgent2().GetInterface_byMacAddress(Router_MacList_Mac);
+                        if(has_similar_connection(connections, switchrouterpairs.get(i).getAgent1(), switchrouterpairs.get(i).getAgent2(), Switch_Interface, Router_Interface)){
+                            continue;
+                        }
                         Connection connection = new Connection(Switch_Interface, Router_Interface, switchrouterpairs.get(i).getAgent1(), switchrouterpairs.get(i).getAgent2(), "Switch_Router");
                         connections.add(connection);
                     }
@@ -546,9 +554,6 @@ public class AND {
     public static ArrayList<Connection> Switch_to_host_connectivity(ArrayList<AgentPair> switchhostpairs, ArrayList<Connection> Connections) throws IOException {
         for(AgentPair switchhostpair : switchhostpairs){
             String host_IP = switchhostpair.getAgent2().getIPAddress();
-            if(MiscellaneousMethods.IP_is_connected(host_IP, Connections)){
-                continue;
-            }
             String switch_IP = switchhostpair.getAgent1().getIPAddress();
             String switch_Mask = ((Switch)switchhostpair.getAgent1()).getMask();
             String switch_NetIP = MiscellaneousMethods.getNetworkIP(switch_IP, switch_Mask);
@@ -565,21 +570,21 @@ public class AND {
             ArrayList<ArrayList<String>> switch_macaddrtable = SNMP_methods.getfromwalk_multi(switch_IP, OIDS.dot1dTpFdbTable, oids);
             ArrayList<Integer> portoccurunces_Switch = new ArrayList<>();
             ArrayList<Integer> removing_indices = new ArrayList<>();
-            for (int p = 0; p < switch_macaddrtable.get(1).size(); p++) {
-                int count = 0;
-                for (int l = 0; l < switch_macaddrtable.get(1).size(); l++) {
-                    if (switch_macaddrtable.get(1).get(p).equals(switch_macaddrtable.get(1).get(l))) {
-                        count++;
-                    }
-                }
-                portoccurunces_Switch.add(count);
-            }
-
-            for (int p = 0; p < switch_macaddrtable.get(1).size(); p++) {
-                if (portoccurunces_Switch.get(p) > 1) {
-                    removing_indices.add(p);
-                }
-            }
+//            for (int p = 0; p < switch_macaddrtable.get(1).size(); p++) {
+//                int count = 0;
+//                for (int l = 0; l < switch_macaddrtable.get(1).size(); l++) {
+//                    if (switch_macaddrtable.get(1).get(p).equals(switch_macaddrtable.get(1).get(l))) {
+//                        count++;
+//                    }
+//                }
+//                portoccurunces_Switch.add(count);
+//            }
+//
+//            for (int p = 0; p < switch_macaddrtable.get(1).size(); p++) {
+//                if (portoccurunces_Switch.get(p) > 1) {
+//                    removing_indices.add(p);
+//                }
+//            }
 
             Collections.reverse(removing_indices);
 
@@ -599,11 +604,14 @@ public class AND {
                     Switch switchA = (Switch)switchhostpair.getAgent1();
                     Host hostB = (Host)switchhostpair.getAgent2();
                     Interface switch_interface = switchA.GetInterface_byindex(switch_macaddrtable.get(1).get(i));
-                    if(MiscellaneousMethods.Interface_is_connected(switch_interface, Connections)){
-                        continue;
-                    }
+//                    if(MiscellaneousMethods.Interface_is_connected(switch_interface, Connections)){
+//                        continue;
+//                    }
                     hostB.set_Mac_Address(mac_of_host);
                     Interface host_interface = hostB.getAnInterface();
+                    if(has_similar_connection(Connections, switchA, hostB, switch_interface, host_interface)){
+                        continue;
+                    }
                     Connection interfaceConnection = new Connection(switch_interface, host_interface, switchA, hostB, "Switch_Host");
                     Connections.add(interfaceConnection);
                     break;
@@ -725,6 +733,12 @@ public class AND {
             }
         }
         Switch switchh = new Switch(sysdescr, sysname, switchifs);
+        for(Interface intf : switchh.getInterfaces()){
+            if(intf.getIp_address().equals("")){
+                intf.setIp_address(switchh.getIPAddress());
+                intf.setSubnet_mask(switchh.getMask());
+            }
+        }
         return switchh;
     }
     
@@ -740,6 +754,49 @@ public class AND {
             }else if(connection.getInterfaceA().getDescription().contains("null") || connection.getInterfaceB().getDescription().contains("null")){
                 temp.remove(connection);
             }
+            
+            if(connection.getType().equals("Switch_Router")){
+                for (Connection connection2 : connections) {
+                    if (!connection.equals(connection2)) {
+                        if (connection2.getType().equals("Router_Router")) {
+                            if(connection.getAgentB().equals(connection2.getAgentA())){
+                                if(connection.getInterfaceB().equals(connection2.getInterfaceA())){
+                                    temp.remove(connection2);
+                                }
+                            }else if(connection.getAgentB().equals(connection2.getAgentB())){
+                                if(connection.getInterfaceB().equals(connection2.getInterfaceB())){
+                                    temp.remove(connection2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }else if(connection.getType().equals("Switch_Switch")){
+                for (Connection connection2 : connections){
+                    if(!connection.equals(connection2)){
+                        if (connection2.getType().equals("Switch_Host")) {
+                            if(connection.getAgentA().equals(connection2.getAgentA())){
+                                if(connection.getInterfaceA().equals(connection2.getInterfaceA())){
+                                    temp.remove(connection2);
+                                }
+                            }else if(connection.getAgentA().equals(connection2.getAgentB())){
+                                if(connection.getInterfaceA().equals(connection2.getInterfaceB())){
+                                    temp.remove(connection2);
+                                }
+                            }else if(connection.getAgentB().equals(connection2.getAgentA())){
+                                if(connection.getInterfaceB().equals(connection2.getInterfaceA())){
+                                    temp.remove(connection2);
+                                }
+                            }else if(connection.getAgentB().equals(connection2.getAgentB())){
+                                if(connection.getInterfaceB().equals(connection2.getInterfaceB())){
+                                    temp.remove(connection2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
         }
         return temp;
     }
@@ -754,46 +811,46 @@ public class AND {
                 Connection c2 = connections.get(j);
                 if (!c1.equals(c2)) {
                     if (c1.getAgentA().equals(c2.getAgentA())) {
-                        if (!c1.getAgentA().getClass().getSimpleName().equals("Host")) {
+//                        if (!c1.getAgentA().getClass().getSimpleName().equals("Host")) {
                             if (c1.getInterfaceA().equals(c2.getInterfaceA())) {
                                 need_to_edit_connections.add(c1);
                                 break;
                             }
-                        } else {
-                            need_to_edit_connections.add(c1);
-                            break;
-                        }
+//                        } else {
+//                            need_to_edit_connections.add(c1);
+//                            break;
+//                        }
                     } else if (c1.getAgentA().equals(c2.getAgentB())) {
-                        if (!c1.getAgentA().getClass().getSimpleName().equals("Host")) {
+//                        if (!c1.getAgentA().getClass().getSimpleName().equals("Host")) {
                             if (c1.getInterfaceA().equals(c2.getInterfaceB())) {
                                 need_to_edit_connections.add(c1);
                                 break;
                             }
-                        } else {
-                            need_to_edit_connections.add(c1);
-                            break;
-                        }
+//                        } else {
+//                            need_to_edit_connections.add(c1);
+//                            break;
+//                        }
                     }
                     else if (c1.getAgentB().equals(c2.getAgentA())) {
-                        if (!c1.getAgentB().getClass().getSimpleName().equals("Host")) {
+//                        if (!c1.getAgentB().getClass().getSimpleName().equals("Host")) {
                             if (c1.getInterfaceB().equals(c2.getInterfaceA())) {
                                 need_to_edit_connections.add(c1);
                                 break;
                             }
-                        } else {
-                            need_to_edit_connections.add(c1);
-                            break;
-                        }
+//                        } else {
+//                            need_to_edit_connections.add(c1);
+//                            break;
+//                        }
                     } else if (c1.getAgentB().equals(c2.getAgentB())) {
-                        if (!c1.getAgentB().getClass().getSimpleName().equals("Host")) {
+//                        if (!c1.getAgentB().getClass().getSimpleName().equals("Host")) {
                             if (c1.getInterfaceB().equals(c2.getInterfaceB())) {
                                 need_to_edit_connections.add(c1);
                                 break;
                             }
-                        } else {
-                            need_to_edit_connections.add(c1);
-                            break;
-                        }
+//                        } else {
+//                            need_to_edit_connections.add(c1);
+//                            break;
+//                        }
                     }
                 }
             }

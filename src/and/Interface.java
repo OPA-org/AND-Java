@@ -4,7 +4,7 @@ public class Interface  {
     private String index;
     private String description;
     private String ip_address;
-    private String subnet_mask;
+    private String subnet_mask = "";
     private String mac_address;
     private String connected_to;
 
